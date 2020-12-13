@@ -1,0 +1,18 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+#container {
+  width: 701px;
+  line-height: 0; /* 很重要！！将容器内部方格的行间距设置为0，不然每行之间会出现纵向距离 */
+}
+.grey {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  line-height: 6px;
+  border-bottom: solid 1px #fff;
+  border-right: solid 1px #fff;
+  background-color: #dcdcdc;
+  vertical-align: baseline;
+}

@@ -159,9 +159,10 @@ function bestChoice(pattern, shape) {
     FAIL: -1, // 己方输
   };
 
-  let p;
+  // 这里为了不调用两次willWin，将其赋给p
+  let p = willWin(pattern, shape);
   // 特例, 离赢只差一步
-  if ((p = willWin(pattern, shape))) {
+  if (p) {
     return {
       point: p,
       result: RESULT_TYPE.OWN_WIN,
