@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reactive 的实际应用 调色盘</title>
+  </head>
+  <body>
+    <input id="r" type="range" />
+    <input id="g" type="range" />
+    <input id="b" type="range" />
+
+    <script>
+      /*
+       * 底层数据处理
+       */
+      const mockObj = {
+        r: 1,
+        g: 2,
+        b: 3,
+      };
+
+      let objPro = reactive(mockObj);
+
+      let callbacks = new Map();
+      /**
+       * 其callbacks数据结构如下：
+       * {
+       *  {a:1,b:2}:{ a:callbackA, b: callbackB }
+       * }
+       *  */
+      let usedReactivities = []; // 触发get时更新
+
+      // 在声明effect(()=>{...}) 时就往callbacks集合中给对应属性添加回调队列
+      function effect(callback) {
+        usedReactivities = [];
+        callback();
+        // 每次遍历访问过的属性，仅对其添➕其相应的callbacks。
+        for (let item of usedReactivities) {
+          if (!callbacks.has(item[0])) {
+            callbacks.set(item[0], new Map());
+          }
+
+          // 判断是否对应的对象上有此属性
+          if (!callbacks.get(item[0]).has(item[1])) {
+            callbacks.get(item[0]).set(item[1], []);
+          }
+
+          callbacks.get(item[0]).get(item[1]).push(callback);
+        }
+      }
+
+      // 给reactive传递一个想被代理的对象
+      function reactive(obj) {
+        return new Proxy(obj, {
+          get(obj, property) {
+            // 在effect函数中，一旦调用objPro值，便会向内添加使用到的值
+            usedReactivities.push([obj, property]);
+            return obj[property];
+          },
+          set(obj, property, val) {
+            obj[property] = val;
+            const mapProperty = callbacks.get(obj);
+            // 精准执行被改变属性的回调
+            if (mapProperty) {
+              if (mapProperty.get(property)) {
+                // 因为可能给这个属性添加了不止一个回调
+                for (let itemCallback of mapProperty.get(property)) {
+                  itemCallback();
+                }
+              }
+            }
+
+            return obj[property];
+          },
+        });
+      }
+
+      /*
+       * 使用effect配合监听DOM实现双向绑定
+       */
+      effect(() => {
+        const inputElement = document.getElementById("r");
+        inputElement.value = objPro.r;
+      });
+      effect(() => {
+        const inputElement = document.getElementById("g");
+        inputElement.value = objPro.g;
+      });
+      effect(() => {
+        const inputElement = document.getElementById("b");
+        inputElement.value = objPro.b;
+      });
+      // DOM侧数据改变--映射到数据源改变
+      document
+        .getElementById("r")
+        .addEventListener("input", (event) => (objPro.r = event.target.value));
+      document
+        .getElementById("g")
+        .addEventListener("input", (event) => (objPro.g = event.target.value));
+      document
+        .getElementById("b")
+        .addEventListener("input", (event) => (objPro.b = event.target.value));
+    </script>
+  </body>
+</html>

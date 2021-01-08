@@ -40,7 +40,7 @@ class LinkedList{
         this.head = head;
     }
 }
-```
+``` 
 
 - 创建链表
 ```js

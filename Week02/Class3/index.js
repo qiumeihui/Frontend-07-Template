@@ -54,10 +54,8 @@ async function findPath(mapData, start, aim) {
   async function insert(x, y) {
     // 根据一维数组的特性，计算当前点
     const currentCoordinate = y * 100 + x;
-    // 边界条件1: 当前点超出最大范围
-    // 边界条件2: 当前点为墙或者已经走过
+    // 边界条件: 当前点超出最大范围 ||   当前点为墙或者已经走过
     if (x < 0 || x >= 100 || y < 0 || y >= 100) return;
-
     if (mapData[currentCoordinate]) return;
 
     await sleep(50); // 设置少许延迟，便于直观看到每次insert函数

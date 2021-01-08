@@ -44,33 +44,33 @@ async function findPath(mapData, start, aim) {
   async function insert(x, y, pre) {
     // 根据一维数组的特性，计算当前点
     const currentCoordinate = y * 100 + x;
-    // 边界条件1: 当前点超出最大范围
-    // 边界条件2: 当前点为墙或者已经走过
+    // 边界条件: 当前点超出最大范围 || 当前点为墙或者已经走过
     if (x < 0 || x >= 100 || y < 0 || y >= 100) return;
-
     if (mapData[currentCoordinate]) return;
 
     await sleep(10); // 设置少许延迟，便于直观看到每次insert函数
     container.children[y * 100 + x].style.backgroundColor = "orange";
-    mapData[currentCoordinate] = pre; // 将已经走过的标记为其前驱节点
+    mapData[currentCoordinate] = pre; // 将其前驱节点作为已走过的标记，便于回溯
     queue.push([x, y]); // 入队列
   }
 
   // 当队列长度不为空时
   while (queue.length) {
     let [x, y] = queue.shift(); // 取出队头
-    // 判断此点是否为目标点
+    // 判断此点是否为目标点，如果是则回溯找到成功路上经过的点
     if (x === aim[0] && y === aim[1]) {
       // 一个从终点返回起点的坐标路径集合
       const successPath = [];
 
-      // 键：[20,20]，值：mapData[20 * 100 + 20]
+      // 键：[20,20]，值：mapData[20 * 100 + 20]。回溯终止条件为找到了初始节点
       while (x !== start[0] || y !== start[1]) {
         successPath.push(mapData[y * 100 + x]);
+        // 取出每个点上记录的前驱坐标，结构为insert办法传入的最后一个参数
         [x, y] = cloneMapData[y * 100 + x];
 
         await sleep(30);
-        container.children[y * 100 + x].style.backgroundColor = "green";
+        // 根据每个点记录的前驱坐标，为其添加背景色
+        container.children[y * 100 + x].style.backgroundColor = "seagreen";
       }
       return successPath;
     }

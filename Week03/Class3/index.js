@@ -10,6 +10,7 @@ const dictionary = [
   "-",
   "*",
   "/",
+  ga,
 ];
 
 function* tokenize(source) {
@@ -20,10 +21,11 @@ function* tokenize(source) {
     result = rulePattern.exec(source);
     if (!result) break;
     if (rulePattern.lastIndex - lastIndex > result[0].length) break;
-
+    debugger;
     let token = { type: null, value: null };
 
     for (var i = 1; i <= dictionary.length; i++) {
+      // 寻找当前字符匹配的底层类型
       if (result[i]) token.type = dictionary[i - 1];
     }
     token.value = result[0];

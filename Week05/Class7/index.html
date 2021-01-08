@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>基础拖拽</title>
+    <style>
+      #dragElement {
+        width: 200px;
+        height: 200px;
+        background-color: slateblue;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dragElement" />
+  </body>
+  <script>
+    const drag = document.getElementById("dragElement");
+    let baseX = 0;
+    let baseY = 0;
+
+    // 1.mousedown事件监听
+    // 2.mousemove、mouseup事件监听(这里注意move、up时的监听对象要为整个document)
+    // 3.鼠标松开时取消监听
+    // 4.设置div的实时偏移量（1.这里用transform去实现;2.需要记录上次的偏移量）
+    drag.addEventListener("mousedown", function (dragEvent) {
+      function moveFun(mouseEvent) {
+        drag.style.transform = `translate(${
+          baseX + mouseEvent.clientX - dragEvent.clientX
+        }px,${baseY + mouseEvent.clientY - dragEvent.clientY}px)`;
+      }
+      function upFun(mouseEvent) {
+        // 鼠标收起时记录上次偏移量
+        baseX += mouseEvent.clientX - dragEvent.clientX;
+        baseY += mouseEvent.clientY - dragEvent.clientY;
+        document.removeEventListener("mousemove", moveFun);
+        document.removeEventListener("mouseup", upFun);
+      }
+      document.addEventListener("mousemove", moveFun);
+      document.addEventListener("mouseup", upFun);
+    });
+  </script>
+</html>

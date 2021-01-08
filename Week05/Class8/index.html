@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Range: 正常流的拖拽</title>
+    <style>
+      #dragElement {
+        width: 200px;
+        height: 100px;
+        background-color: slateblue;
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dragElement"></div>
+    <div id="textContainer">
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+      文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分文字部分
+    </div>
+  </body>
+
+  <script>
+    const drag = document.getElementById("dragElement");
+    let baseX = 0;
+    let baseY = 0;
+
+    // 1.mousedown事件监听
+    // 2.mousemove、mouseup事件监听(这里注意move、up时的监听对象要为整个document)
+    // 3.鼠标松开时取消监听
+    // 4.设置div的实时偏移量（1.这里用transform去实现;2.需要记录上次的偏移量）
+    drag.addEventListener("mousedown", function (dragEvent) {
+      function moveFun(mouseEvent) {
+        // drag.style.transform = `translate(${
+        //   baseX + mouseEvent.clientX - dragEvent.clientX
+        // }px,${baseY + mouseEvent.clientY - dragEvent.clientY}px)`;
+        let range = getNearest(mouseEvent.clientX, mouseEvent.clientY);
+        range.insertNode(drag);
+      }
+      function upFun(mouseEvent) {
+        // 鼠标收起时记录上次偏移量
+        baseX += mouseEvent.clientX - dragEvent.clientX;
+        baseY += mouseEvent.clientY - dragEvent.clientY;
+        document.removeEventListener("mousemove", moveFun);
+        document.removeEventListener("mouseup", upFun);
+      }
+      document.addEventListener("mousemove", moveFun);
+      document.addEventListener("mouseup", upFun);
+    });
+
+    // range实现
+    let rangesArr = [];
+    const container = document.getElementById("textContainer");
+    for (let i = 0; i < container.childNodes[0].textContent.length; i++) {
+      let itemRange = document.createRange();
+      itemRange.setStart(container.childNodes[0], i);
+      itemRange.setEnd(container.childNodes[0], i);
+
+      rangesArr.push(itemRange);
+    }
+
+    // 找指定坐标的最近range片段
+    function getNearest(x, y) {
+      let min = Infinity;
+      let resRange = null;
+      let distance = 0;
+
+      // 遍历片段，找出最小值
+      for (let i = 0; i < rangesArr.length; i++) {
+        let rect = rangesArr[i].getBoundingClientRect();
+        console.log(rect);
+        distance = (rect.x - x) ** 2 + (rect.y - y) ** 2; // 这里不用开根号，因为不求结果，仅比较大小
+        if (distance < min) {
+          //   console.log(distance);
+          resRange = rangesArr[i];
+          min = distance; // 更新最小值，才能不断比较出更小
+        }
+      }
+
+      return resRange;
+    }
+
+    // 禁止选中默认效果
+    document.addEventListener("selectstart", (event) => event.preventDefault());
+  </script>
+</html>
